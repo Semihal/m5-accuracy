@@ -51,7 +51,8 @@ class WRMSSE:
         ds_with_prices.loc[:, 'revenue'] = ds_with_prices['purchases'] * ds_with_prices['sell_price']
         #
         ds_with_prices = ds_with_prices.set_index(['item_id', 'store_id', 'day'])
-        ds_day_revenue = ds_with_prices.unstack(level=2)['revenue'].reset_index(drop=True)
+        ds_day_revenue = ds_with_prices.unstack(level=2)['revenue']
+        ds_day_revenue = ds_day_revenue.loc[zip(self.train.item_id, self.train.store_id), :].reset_index(drop=True)
         ds_item_revenue = pd.concat([self.train[ID_COLUMNS], ds_day_revenue], axis=1, sort=False)
         return ds_item_revenue
 
