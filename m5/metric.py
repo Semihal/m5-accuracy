@@ -3,8 +3,8 @@ from typing import Dict
 import pandas as pd
 import numpy as np
 
-from utils import day_to_week_dict, select_tail_days, only_days_columns
-from constants import *
+from utils.funcs import day_to_week_dict, select_tail_days, only_days_columns
+from m5.constants import *
 
 
 def read_dataset(path: str = 'data/raw/sales_train_evaluation.csv'):
@@ -116,9 +116,9 @@ class WRMSSE:
 
 
 if __name__ == '__main__':
-    cal = pd.read_csv('data/raw/calendar.csv')
+    cal = pd.read_csv('../data/raw/calendar.csv')
     eval_set = read_dataset()
-    prices_set = pd.read_csv('data/raw/sell_prices.csv')
+    prices_set = pd.read_csv('../data/raw/sell_prices.csv')
 
     day_columns = only_days_columns(eval_set)
     train_dataset = eval_set.drop(day_columns[-28:], axis=1)
