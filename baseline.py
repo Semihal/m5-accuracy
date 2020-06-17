@@ -19,7 +19,7 @@ def build_base_dataset(use_cache=True):
     prices_set = read_prices_dataset()
 
     sold = eval_set.melt(
-        id_vars=['item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'constant_id'],
+        id_vars=['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'constant_id'],
         var_name='d',
         value_name='sold'
     ).dropna()
