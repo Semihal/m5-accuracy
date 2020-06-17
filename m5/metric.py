@@ -1,4 +1,5 @@
 from typing import Dict
+import logging
 
 import pandas as pd
 import numpy as np
@@ -9,25 +10,22 @@ from utils.funcs import only_days_columns
 from m5.constants import *
 
 
-def read_dataset(path: str = 'data/raw/sales_train_evaluation.csv'):
-    ds = pd.read_csv(path)
-    ds.loc[:, 'constant_id'] = 0
-    return ds
+logging.basicConfig(format="[%(asctime)s] %(levelname)s: %(message)s", level=logging.INFO)
 
 
 class WRMSSE:
 
     def __init__(self, train, validate, levels=LEVELS):
-        print('Calculate profit')
+        logging.info('Calculate profit')
         self.daily_profit = self._daily_profit(train)
-        print('Transform train to standard view')
+        logging.info('Transform train to standard view')
         self.train = self._to_standard_view(train)
-        print('Transform test to standard view')
+        logging.info('Transform validation to standard view')
         self.validate = self._to_standard_view(validate)
         self.validate_days = only_days_columns(self.validate)
         # self.prices = prices
 
-        print('Calculate specification')
+        logging.info('Calculate levels specification')
         self.levels = levels
         self._levels_spec = self.levels_specifications()
 
