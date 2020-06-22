@@ -15,7 +15,8 @@ logging.basicConfig(format="[%(asctime)s] %(levelname)s: %(message)s", level=log
 
 class WRMSSE:
 
-    def __init__(self, train, validate, levels=LEVELS):
+    def __init__(self, train, validate, target_col='sold', levels=LEVELS):
+        self.target_col = target_col
         logging.info('Calculate profit')
         self.daily_profit = self._daily_profit(train)
         logging.info('Transform train to standard view')
@@ -31,7 +32,7 @@ class WRMSSE:
 
     def _daily_profit(self, train) -> pd.DataFrame:
         # get last 28 days
-        train = train[ID_COLUMNS + ['d', 'sold', 'wm_yr_wk', 'sell_price']]
+        train = train[ID_COLUMNS + ['d', 'wm_yr_wk', 'sell_price'] + [self.target_col]]
         max_day = train['d'].max()
         ds_last_days = train[train['d'] > max_day - 28]
         # calculate revenue
@@ -40,7 +41,7 @@ class WRMSSE:
 
     def _revenue(self, ds_with_prices: pd.DataFrame, train: pd.DataFrame):
         # add revenue feature
-        ds_with_prices.loc[:, 'revenue'] = ds_with_prices['sold'] * ds_with_prices['sell_price']
+        ds_with_prices.loc[:, 'revenue'] = ds_with_prices[self.target_col] * ds_with_prices['sell_price']
         ds_with_prices = ds_with_prices.set_index(['item_id', 'store_id', 'd'])['revenue']
         ds_day_revenue = ds_with_prices.unstack(level=2)
 
@@ -52,7 +53,7 @@ class WRMSSE:
 
     def _to_standard_view(self, ds: pd.DataFrame):
         indexes = ds[ID_COLUMNS].drop_duplicates()
-        pivot = pd.pivot(ds, index='id', columns='d', values='sold').reset_index()
+        pivot = pd.pivot(ds, index='id', columns='d', values=self.target_col).reset_index()
         view = pivot.merge(indexes, on='id')
         rename_dict = {day_num: f'd_{day_num}' for day_num in view.columns if isinstance(day_num, int)}
         view = view.rename(columns=rename_dict)
