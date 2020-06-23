@@ -6,42 +6,12 @@ import pandas as pd
 from tqdm import tqdm
 
 from m5.constants import LEVELS, ID_COLUMNS
-from m5.model import train
-from utils.read import read_sales_dataset, read_calendar_dataset, read_prices_dataset
-from utils.dtype import fix_merge_dtypes, downcast
+from m5.read import build_base_dataset
+from utils.dtype import downcast
 
 
 CACHE_DIR = os.sep.join(['data', 'cache'])
 logging.basicConfig(format="[%(asctime)s] %(levelname)s: %(message)s", level=logging.INFO)
-
-
-def build_base_dataset(use_cache=True):
-    if use_cache and os.path.isfile('data/cache/dataset.jbl'):
-        logging.info('Use cache')
-        ds = joblib.load('data/cache/dataset.jbl')
-        return ds
-
-    logging.info('Re-building the basic data set.')
-    eval_set = read_sales_dataset()
-    cal = read_calendar_dataset()
-    prices_set = read_prices_dataset()
-
-    sold = eval_set.melt(
-        id_vars=['constant_id', 'id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id'],
-        value_vars=[col for col in eval_set.columns if col.startswith('d_')],
-        var_name='d',
-        value_name='sold'
-    )
-    ds = sold.merge(cal, on='d', copy=False)
-    ds = ds.merge(prices_set, on=['store_id', 'item_id', 'wm_yr_wk'], copy=False)
-
-    ds['d'] = ds['d'].apply(lambda x: x.split('_')[1]).astype('int16')
-    ds = fix_merge_dtypes(ds)
-
-    if use_cache:
-        joblib.dump(ds, 'data/cache/dataset.jbl')
-
-    return ds
 
 
 def window_stats(ds, features, stat_funcs, levels=LEVELS, shift=28, use_cache=True):

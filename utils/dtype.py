@@ -32,13 +32,3 @@ def convert_type(values, types, resolve_func):
 def _is_type(values, dtype, resolve_func):
     dtype_info = resolve_func(dtype)
     return values.min() >= dtype_info.min and values.max() <= dtype_info.max
-
-
-def fix_merge_dtypes(ds: pd.DataFrame):
-    # to category
-    categorical_columns = ['item_id', 'store_id']
-    ds[categorical_columns] = ds[categorical_columns].astype('category')
-    # to date
-    ds['date'] = pd.to_datetime(ds['date'], format='%Y-%m-%d')
-    # result
-    return ds
