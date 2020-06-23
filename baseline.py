@@ -27,12 +27,13 @@ def build_base_dataset(use_cache=True):
     prices_set = read_prices_dataset()
 
     sold = eval_set.melt(
-        id_vars=['id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id', 'constant_id'],
+        id_vars=['constant_id', 'id', 'item_id', 'dept_id', 'cat_id', 'store_id', 'state_id'],
+        value_vars=[col for col in eval_set.columns if col.startswith('d_')],
         var_name='d',
         value_name='sold'
-    ).dropna()
-    ds = pd.merge(sold, cal, left_on='d', right_index=True, how='left')
-    ds = pd.merge(ds, prices_set, on=['store_id', 'item_id', 'wm_yr_wk'], how='left')
+    )
+    ds = sold.merge(cal, on='d', copy=False)
+    ds = ds.merge(prices_set, on=['store_id', 'item_id', 'wm_yr_wk'], copy=False)
 
     ds['d'] = ds['d'].apply(lambda x: x.split('_')[1]).astype('int16')
     ds = fix_merge_dtypes(ds)
